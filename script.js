@@ -1,66 +1,69 @@
-document.querySelectorAll('.add-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    alert('Open student registration modal...');
-    // In real implementation, trigger a modal or redirect
-  });
-});
-
+// Select DOM elements
 const modal = document.getElementById("studentModal");
 const openBtns = document.querySelectorAll(".add-btn");
 const closeBtn = document.getElementById("closeModal");
 const uidInput = document.getElementById("uid");
-const studentForm = document.getElementById("studentForm");
+const form = document.getElementById("studentForm");
 
 // Open modal and fetch latest UID
 openBtns.forEach(btn => {
   btn.addEventListener("click", async () => {
-    modal.style.display = "flex";
     try {
-      const res = await fetch("https://bravetosmart.onrender.com/api/latest-uid");
+      const res = await fetch("https://bravetosmart.onrender.com/api/students/latest-uid");
       const data = await res.json();
-      uidInput.value = data.uid || "Not found";
-    } catch (err) {
-      uidInput.value = "Fetch error";
-      console.error("Failed to fetch UID:", err);
+
+      // Pre-fill the UID field
+      uidInput.value = data.uid || "No UID captured yet";
+    } catch (error) {
+      uidInput.value = "Error fetching UID";
+      console.error("Failed to fetch UID:", error);
     }
+
+    modal.style.display = "flex";
   });
 });
 
 // Close modal
 closeBtn.addEventListener("click", () => {
   modal.style.display = "none";
-  studentForm.reset();
+  form.reset();
 });
 
-// Submit form
-studentForm.addEventListener("submit", async (e) => {
+// Close modal when clicking outside modal content
+window.addEventListener("click", e => {
+  if (e.target === modal) {
+    modal.style.display = "none";
+    form.reset();
+  }
+});
+
+// Submit form to backend (optional, adjust URL)
+form.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const studentData = {
+  const student = {
     uid: uidInput.value,
     name: document.getElementById("name").value,
     matric: document.getElementById("matric").value,
   };
 
   try {
-    const res = await fetch("https://bravetosmart.onrender.com/api/students", {
+    const res = await fetch("https://bravetosmart.onrender.com/api/students/register", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(studentData),
+      body: JSON.stringify(student)
     });
 
-    if (res.ok) {
-      alert("Student registered successfully!");
-      modal.style.display = "none";
-      studentForm.reset();
-    } else {
-      const errorData = await res.json();
-      alert("Failed: " + (errorData.message || "Unknown error"));
-    }
+    if (!res.ok) throw new Error("Failed to register");
+
+    alert("Student registered successfully!");
+    modal.style.display = "none";
+    form.reset();
+    // TODO: Refresh student list
   } catch (err) {
-    alert("Error submitting student data.");
     console.error(err);
+    alert("Error registering student.");
   }
 });
