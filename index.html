@@ -44,19 +44,30 @@
 
   <script src="script.js"></script>
 
-  <!-- Student Registration Modal -->
   <div class="modal" id="studentModal">
     <div class="modal-content">
       <h3>Register New Student</h3>
       <form id="studentForm">
-        <label>UID</label>
+        <label for="uid">UID</label>
         <input type="text" id="uid" name="uid" readonly />
 
-        <label>Name</label>
+        <label for="name">Name</label>
         <input type="text" id="name" name="name" required />
 
-        <label>Matric Number</label>
+        <label for="matric">Matric Number</label>
         <input type="text" id="matric" name="matric" required />
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="level">Level</label>
+        <input type="text" id="level" name="level" />
+
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone" required />
+
+        <label for="department">Department</label>
+        <input type="text" id="department" name="department" required />
 
         <div class="modal-actions">
           <button type="submit">Submit</button>
