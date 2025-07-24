@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>e-Access - Student Management</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="logo">
+      🎓 <span>e-Access</span>
+    </div>
+    <nav class="nav-links">
+      <a class="active" href="#">👥 Students <span class="badge">(0)</span></a>
+      <a href="#">👤 Profile</a>
+      <a href="#">📋 Course Registration</a>
+      <a href="#">📊 Activity Logs</a>
+      <a href="#">📈 Analytics</a>
+      <a href="#">⚙️ Settings</a>
+    </nav>
+    <div class="admin">
+      <span>Welcome, Admin</span>
+      <button class="logout">🔓 Logout</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <h2>Student Management</h2>
+    <div class="top-actions">
+      <input type="text" placeholder="Search students..." class="search-box" />
+      <button class="add-btn top">➕ Add Student</button>
+    </div>
+
+    <div class="empty-state">
+      <div class="icon">👥</div>
+      <h3>No Students Found</h3>
+      <p>Start by adding your first student to the system</p>
+      <button class="add-btn main">➕ Add Student</button>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+
+  <!-- Student Registration Modal -->
+  <div class="modal" id="studentModal">
+    <div class="modal-content">
+      <h3>Register New Student</h3>
+      <form id="studentForm">
+        <label>UID</label>
+        <input type="text" id="uid" name="uid" readonly />
+
+        <label>Name</label>
+        <input type="text" id="name" name="name" required />
+
+        <label>Matric Number</label>
+        <input type="text" id="matric" name="matric" required />
+
+        <div class="modal-actions">
+          <button type="submit">Submit</button>
+          <button type="button" id="closeModal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+
+</html>
