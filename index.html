@@ -6,6 +6,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>e-Access - Student Management</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #27ae60;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+    }
+
+    .notification.error {
+      background: #e74c3c;
+    }
+
+    .notification.info {
+      background: #f39c12;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .pagination button {
+      margin: 0 3px;
+      padding: 4px 10px;
+      border: none;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+
+    .pagination .active {
+      background: #3498db;
+      color: white;
+    }
+
+    .student-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .student-table th,
+    .student-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .new-entry {
+      background-color: #e8f5e9;
+      animation: flash 1s ease-in-out;
+    }
+
+    @keyframes flash {
+      0% {
+        background-color: #c8e6c9;
+      }
+
+      100% {
+        background-color: #e8f5e9;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -42,8 +111,6 @@
     </div>
   </main>
 
-  <script src="script.js"></script>
-
   <div class="modal" id="studentModal">
     <div class="modal-content">
       <h3>Register New Student</h3>
@@ -76,7 +143,265 @@
       </form>
     </div>
   </div>
+  <!-- Where students will be listed -->
+  <div id="studentList"></div>
 
+  <!-- Success or error messages -->
+  <p id="successBox" style="color:green;"></p>
+  <p id="errorBox" style="color:red;"></p>
+
+  <!-- Your form should look like this -->
+  <form id="registerForm">
+    <input type="text" id="uid" placeholder="UID" readonly />
+    <input type="text" name="name" placeholder="Name" required />
+    <input type="text" name="matricNo" placeholder="Matric Number" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="text" name="level" placeholder="Level" required />
+    <input type="text" name="phone" placeholder="Phone" required />
+    <input type="text" name="department" placeholder="Department" required />
+    <button type="submit">Register</button>
+  </form>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const modal = document.getElementById("studentModal");
+      const addBtns = document.querySelectorAll(".add-btn");
+      const closeBtn = document.getElementById("closeModal");
+      const uidInput = document.getElementById("uid");
+      const form = document.getElementById("studentForm");
+      const studentTable = document.querySelector(".empty-state");
+      const badge = document.querySelector(".badge");
+
+      let students = [];
+      let currentPage = 1;
+      const perPage = 10;
+
+      addBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          modal.style.display = "block";
+          uidInput.value = 'Scan UID Code...';
+          uidInput.readOnly = true;
+          uidInput.title = 'Waiting for scan...';
+          uidInput.style.backgroundColor = '#fff3cd';
+          uidInput.style.border = '1px dashed #d6a100';
+          toggleFormFields(false);
+          showNotification('Press Enter to fetch scanned UID.', 'info');
+        });
+      });
+
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        form.reset();
+        uidInput.value = '';
+        uidInput.readOnly = false;
+        uidInput.title = '';
+        toggleFormFields(true);
+      });
+
+      async function fetchLatestUID() {
+        try {
+          const res = await fetch("https://bravetosmart.onrender.com/api/students/get-latest-uid");
+          const data = await res.json();
+          return data.latestUid || data.uid || null;
+        } catch (err) {
+          console.error(err);
+          return null;
+        }
+      }
+
+      async function handleUIDScan() {
+        uidInput.value = "Fetching UID...";
+        const uid = await fetchLatestUID();
+        if (uid) {
+          uidInput.value = uid;
+          uidInput.readOnly = true;
+          uidInput.style.backgroundColor = "#e8f5e9";
+          uidInput.style.border = "2px solid #27ae60";
+          uidInput.title = "UID fetched successfully";
+          toggleFormFields(true);
+          showNotification("UID captured successfully!", "success");
+        } else {
+          uidInput.value = "Error/No UID";
+          uidInput.style.backgroundColor = "#f8d7da";
+          uidInput.style.border = "1px solid #dc3545";
+          toggleFormFields(false);
+          showNotification("Failed to fetch UID", "error");
+        }
+      }
+
+      document.addEventListener("keydown", e => {
+        if (modal.style.display === "block" && uidInput.value === "Scan UID Code..." && e.key === "Enter") {
+          e.preventDefault();
+          handleUIDScan();
+        }
+      });
+
+      function toggleFormFields(enable) {
+        const fields = form.querySelectorAll('input:not(#uid), select, textarea, button[type="submit"]');
+        fields.forEach(field => {
+          field.disabled = !enable;
+          field.style.opacity = enable ? '1' : '0.5';
+          field.style.cursor = enable ? 'pointer' : 'not-allowed';
+        });
+      }
+
+      async function loadStudents(highlightUID = null) {
+        const existingTable = document.querySelector(".student-table");
+        if (existingTable) existingTable.remove();
+        studentTable.innerHTML = "<p>Loading students...</p>";
+        try {
+          const res = await fetch("https://bravetosmart.onrender.com/api/students");
+          const data = await res.json();
+          students = data;
+          badge.textContent = `(${students.length})`;
+
+          if (students.length === 0) {
+            studentTable.innerHTML = `
+              <div class="icon">👥</div>
+              <h3>No Students Found</h3>
+              <p>Start by adding your first student to the system</p>
+              <button class="add-btn main">➕ Add Student</button>
+            `;
+            document.querySelector('.add-btn.main').addEventListener("click", () => {
+              modal.style.display = "block";
+              uidInput.value = 'Scan UID Code...';
+              uidInput.readOnly = true;
+              uidInput.title = 'Waiting for scan...';
+              uidInput.style.backgroundColor = '#fff3cd';
+              uidInput.style.border = '1px dashed #d6a100';
+              toggleFormFields(false);
+              showNotification('Press Enter to fetch scanned UID.', 'info');
+            });
+            return;
+          }
+
+          renderPaginatedTable(students, highlightUID);
+        } catch (err) {
+          console.error("Failed to load students:", err);
+          studentTable.innerHTML = "<p style='color: red;'>Error loading students.</p>";
+        }
+      }
+
+      function renderPaginatedTable(data, highlightUID) {
+        const totalPages = Math.ceil(data.length / perPage);
+        const start = (currentPage - 1) * perPage;
+        const pageData = data.slice(start, start + perPage);
+
+        const rows = pageData.map(s => `
+          <tr class="${s.uid === highlightUID ? 'new-entry' : ''}">
+            <td>${s.uid}</td>
+            <td>${s.name}</td>
+            <td>${s.matricNo}</td>
+            <td>${s.email}</td>
+            <td>${s.level}</td>
+            <td>${s.phone}</td>
+            <td>${s.department}</td>
+          </tr>
+        `).join("");
+
+        let pagination = "";
+        if (totalPages > 1) {
+          pagination = `<div class="pagination">`;
+          for (let i = 1; i <= totalPages; i++) {
+            pagination += `<button class="page-btn ${currentPage === i ? "active" : ""}" data-page="${i}">${i}</button>`;
+          }
+          pagination += `</div>`;
+        }
+
+        studentTable.innerHTML = `
+          <table class="student-table">
+            <thead>
+              <tr>
+                <th>UID</th>
+                <th>Name</th>
+                <th>Matric No</th>
+                <th>Email</th>
+                <th>Level</th>
+                <th>Phone</th>
+                <th>Department</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+          ${pagination}
+        `;
+
+        document.querySelectorAll(".page-btn").forEach(btn => {
+          btn.addEventListener("click", e => {
+            currentPage = parseInt(e.target.dataset.page);
+            renderPaginatedTable(students);
+          });
+        });
+
+        if (highlightUID) {
+          setTimeout(() => {
+            const row = document.querySelector("tr.new-entry");
+            if (row) row.classList.remove("new-entry");
+          }, 2000);
+        }
+      }
+
+      form.addEventListener("submit", async e => {
+        e.preventDefault();
+        const uid = uidInput.value.trim();
+        if (!uid || uid === "Scan UID Code..." || uid === "Fetching UID..." || uid === "Error/No UID") {
+          return showNotification("Invalid UID. Please scan again.", "error");
+        }
+
+        const studentData = {
+          uid,
+          name: form.name.value.trim(),
+          matricNo: form.matric.value.trim(),
+          email: form.email.value.trim(),
+          level: form.level.value.trim(),
+          phone: form.phone.value.trim(),
+          department: form.department.value.trim(),
+        };
+
+        const missing = Object.entries(studentData).filter(([k, v]) => k !== "uid" && !v);
+        if (missing.length > 0) {
+          return showNotification("Please fill all fields.", "error");
+        }
+
+        try {
+          const res = await fetch("https://bravetosmart.onrender.com/api/students/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(studentData)
+          });
+
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.message || "Registration failed");
+
+          showNotification("Student registered successfully!", "success");
+          form.reset();
+          modal.style.display = "none";
+          await loadStudents(studentData.uid);
+        } catch (err) {
+          console.error("Registration error:", err);
+          showNotification(err.message, "error");
+        }
+      });
+
+      function showNotification(msg, type = "success") {
+        const existing = document.querySelector(".notification");
+        if (existing) existing.remove();
+
+        const note = document.createElement("div");
+        note.className = `notification ${type}`;
+        note.textContent = msg;
+        document.body.appendChild(note);
+        setTimeout(() => { note.style.opacity = 1; note.style.transform = "translateY(0)"; }, 100);
+        setTimeout(() => {
+          note.style.opacity = 0;
+          note.style.transform = "translateY(-20px)";
+          setTimeout(() => note.remove(), 300);
+        }, 3000);
+      }
+
+      loadStudents(); // initial fetch
+    });
+  </script>
 </body>
 
 </html>
