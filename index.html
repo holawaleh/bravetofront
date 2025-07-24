@@ -2,406 +2,281 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>e-Access - Student Management</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #27ae60;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 6px;
-      z-index: 1000;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: all 0.3s ease;
-    }
-
-    .notification.error {
-      background: #e74c3c;
-    }
-
-    .notification.info {
-      background: #f39c12;
-    }
-
-    .pagination {
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    .pagination button {
-      margin: 0 3px;
-      padding: 4px 10px;
-      border: none;
-      background: #f0f0f0;
-      cursor: pointer;
-    }
-
-    .pagination .active {
-      background: #3498db;
-      color: white;
-    }
-
-    .student-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    .student-table th,
-    .student-table td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-
-    .new-entry {
-      background-color: #e8f5e9;
-      animation: flash 1s ease-in-out;
-    }
-
-    @keyframes flash {
-      0% {
-        background-color: #c8e6c9;
-      }
-
-      100% {
-        background-color: #e8f5e9;
-      }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management System</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
-  <header class="navbar">
-    <div class="logo">
-      🎓 <span>e-Access</span>
-    </div>
-    <nav class="nav-links">
-      <a class="active" href="#">👥 Students <span class="badge">(0)</span></a>
-      <a href="#">👤 Profile</a>
-      <a href="#">📋 Course Registration</a>
-      <a href="#">📊 Activity Logs</a>
-      <a href="#">📈 Analytics</a>
-      <a href="#">⚙️ Settings</a>
-    </nav>
-    <div class="admin">
-      <span>Welcome, Admin</span>
-      <button class="logout">🔓 Logout</button>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Student Management</span>
+      </div>
+      <div class="header-right">
+        <span class="welcome-text">Welcome, Admin</span>
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="content">
-    <h2>Student Management</h2>
-    <div class="top-actions">
-      <input type="text" placeholder="Search students..." class="search-box" />
-      <button class="add-btn top">➕ Add Student</button>
+  <!-- Navigation -->
+  <nav class="nav-tabs">
+    <div class="nav-content">
+      <button class="nav-tab active" data-tab="students">
+        <i class="fas fa-users"></i>
+        Students (<span id="student-count">0</span>)
+      </button>
+      <button class="nav-tab" data-tab="profile">
+        <i class="fas fa-user"></i>
+        Profile
+      </button>
+      <button class="nav-tab" data-tab="registration">
+        <i class="fas fa-clipboard-list"></i>
+        Course Registration
+      </button>
+      <button class="nav-tab" data-tab="logs">
+        <i class="fas fa-history"></i>
+        Activity Logs
+      </button>
+      <button class="nav-tab" data-tab="analytics">
+        <i class="fas fa-chart-bar"></i>
+        Analytics
+      </button>
+      <button class="nav-tab" data-tab="settings">
+        <i class="fas fa-cog"></i>
+        Settings
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Students Tab -->
+    <div id="students-tab" class="tab-content active">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Student Management</h1>
+          <p class="page-subtitle">Manage and track student registrations</p>
+        </div>
+        <div class="page-actions">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Search students...">
+          </div>
+          <button class="add-student-btn" id="add-student-btn">
+            <i class="fas fa-plus"></i>
+            Add Student
+          </button>
+        </div>
+      </div>
+
+      <!-- Students List -->
+      <div class="students-container">
+        <div id="students-list" class="students-grid">
+          <!-- Students will be loaded here -->
+        </div>
+
+        <!-- No Students State -->
+        <div id="no-students" class="no-students" style="display: none;">
+          <div class="no-students-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h2>No Students Found</h2>
+          <p>Start by adding your first student to the system</p>
+          <button class="add-student-btn" onclick="openAddStudentModal()">
+            <i class="fas fa-plus"></i>
+            Add Student
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="empty-state">
-      <div class="icon">👥</div>
-      <h3>No Students Found</h3>
-      <p>Start by adding your first student to the system</p>
-      <button class="add-btn main">➕ Add Student</button>
+    <!-- Other Tabs (Placeholder) -->
+    <div id="profile-tab" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Profile Management</h1>
+          <p class="page-subtitle">Manage user profiles and permissions</p>
+        </div>
+      </div>
+      <div class="coming-soon">
+        <i class="fas fa-user"></i>
+        <h2>Profile Management</h2>
+        <p>Coming Soon</p>
+      </div>
+    </div>
+
+    <div id="registration-tab" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Course Registration</h1>
+          <p class="page-subtitle">Handle student course enrollments</p>
+        </div>
+      </div>
+      <div class="coming-soon">
+        <i class="fas fa-clipboard-list"></i>
+        <h2>Course Registration</h2>
+        <p>Coming Soon</p>
+      </div>
+    </div>
+
+    <div id="logs-tab" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Activity Logs</h1>
+          <p class="page-subtitle">View system activity and audit trails</p>
+        </div>
+      </div>
+      <div class="coming-soon">
+        <i class="fas fa-history"></i>
+        <h2>Activity Logs</h2>
+        <p>Coming Soon</p>
+      </div>
+    </div>
+
+    <div id="analytics-tab" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Analytics</h1>
+          <p class="page-subtitle">View reports and system statistics</p>
+        </div>
+      </div>
+      <div class="coming-soon">
+        <i class="fas fa-chart-bar"></i>
+        <h2>Analytics Dashboard</h2>
+        <p>Coming Soon</p>
+      </div>
+    </div>
+
+    <div id="settings-tab" class="tab-content">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Settings</h1>
+          <p class="page-subtitle">Configure system preferences</p>
+        </div>
+      </div>
+      <div class="coming-soon">
+        <i class="fas fa-cog"></i>
+        <h2>System Settings</h2>
+        <p>Coming Soon</p>
+      </div>
     </div>
   </main>
 
-  <div class="modal" id="studentModal">
+  <!-- Add Student Modal -->
+  <div id="add-student-modal" class="modal">
     <div class="modal-content">
-      <h3>Register New Student</h3>
-      <form id="studentForm">
-        <label for="uid">UID</label>
-        <input type="text" id="uid" name="uid" readonly />
-
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" required />
-
-        <label for="matric">Matric Number</label>
-        <input type="text" id="matric" name="matric" required />
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required />
-
-        <label for="level">Level</label>
-        <input type="text" id="level" name="level" />
-
-        <label for="phone">Phone</label>
-        <input type="text" id="phone" name="phone" required />
-
-        <label for="department">Department</label>
-        <input type="text" id="department" name="department" required />
-
-        <div class="modal-actions">
-          <button type="submit">Submit</button>
-          <button type="button" id="closeModal">Cancel</button>
+      <div class="modal-header">
+        <h2>Add New Student</h2>
+        <button class="close-modal" id="close-modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- UID Status -->
+        <div class="uid-status">
+          <div class="uid-info">
+            <div class="uid-label">RFID UID:</div>
+            <div class="uid-value" id="current-uid">
+              <span class="uid-text">Waiting for RFID scan...</span>
+              <div class="uid-loading">
+                <div class="loading-spinner"></div>
+              </div>
+            </div>
+          </div>
+          <button class="refresh-uid-btn" id="refresh-uid-btn">
+            <i class="fas fa-sync-alt"></i>
+            Refresh UID
+          </button>
         </div>
-      </form>
+
+        <!-- Student Form -->
+        <form id="student-form" class="student-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="matricNo">Matric Number</label>
+              <input type="text" id="matricNo" name="matricNo" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="level">Level</label>
+              <select id="level" name="level" required>
+                <option value="">Select Level</option>
+                <option value="100">100 Level</option>
+                <option value="200">200 Level</option>
+                <option value="300">300 Level</option>
+                <option value="400">400 Level</option>
+                <option value="500">500 Level</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="department">Department</label>
+              <input type="text" id="department" name="department" required>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="cancel-btn" onclick="closeAddStudentModal()">
+              Cancel
+            </button>
+            <button type="submit" class="submit-btn" id="submit-btn">
+              <span class="btn-text">Register Student</span>
+              <div class="btn-loading" style="display: none;">
+                <div class="loading-spinner"></div>
+              </div>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-  <!-- Where students will be listed -->
-  <div id="studentList"></div>
 
-  <!-- Success or error messages -->
-  <p id="successBox" style="color:green;"></p>
-  <p id="errorBox" style="color:red;"></p>
+  <!-- Student Details Modal -->
+  <div id="student-details-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Student Details</h2>
+        <button class="close-modal" onclick="closeStudentDetailsModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="student-details-content">
+          <!-- Student details will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Your form should look like this -->
-  <form id="registerForm">
-    <input type="text" id="uid" placeholder="UID" readonly />
-    <input type="text" name="name" placeholder="Name" required />
-    <input type="text" name="matricNo" placeholder="Matric Number" required />
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="text" name="level" placeholder="Level" required />
-    <input type="text" name="phone" placeholder="Phone" required />
-    <input type="text" name="department" placeholder="Department" required />
-    <button type="submit">Register</button>
-  </form>
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const modal = document.getElementById("studentModal");
-      const addBtns = document.querySelectorAll(".add-btn");
-      const closeBtn = document.getElementById("closeModal");
-      const uidInput = document.getElementById("uid");
-      const form = document.getElementById("studentForm");
-      const studentTable = document.querySelector(".empty-state");
-      const badge = document.querySelector(".badge");
-
-      let students = [];
-      let currentPage = 1;
-      const perPage = 10;
-
-      addBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-          modal.style.display = "block";
-          uidInput.value = 'Scan UID Code...';
-          uidInput.readOnly = true;
-          uidInput.title = 'Waiting for scan...';
-          uidInput.style.backgroundColor = '#fff3cd';
-          uidInput.style.border = '1px dashed #d6a100';
-          toggleFormFields(false);
-          showNotification('Press Enter to fetch scanned UID.', 'info');
-        });
-      });
-
-      closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        form.reset();
-        uidInput.value = '';
-        uidInput.readOnly = false;
-        uidInput.title = '';
-        toggleFormFields(true);
-      });
-
-      async function fetchLatestUID() {
-        try {
-          const res = await fetch("https://bravetosmart.onrender.com/api/students/get-latest-uid");
-          const data = await res.json();
-          return data.latestUid || data.uid || null;
-        } catch (err) {
-          console.error(err);
-          return null;
-        }
-      }
-
-      async function handleUIDScan() {
-        uidInput.value = "Fetching UID...";
-        const uid = await fetchLatestUID();
-        if (uid) {
-          uidInput.value = uid;
-          uidInput.readOnly = true;
-          uidInput.style.backgroundColor = "#e8f5e9";
-          uidInput.style.border = "2px solid #27ae60";
-          uidInput.title = "UID fetched successfully";
-          toggleFormFields(true);
-          showNotification("UID captured successfully!", "success");
-        } else {
-          uidInput.value = "Error/No UID";
-          uidInput.style.backgroundColor = "#f8d7da";
-          uidInput.style.border = "1px solid #dc3545";
-          toggleFormFields(false);
-          showNotification("Failed to fetch UID", "error");
-        }
-      }
-
-      document.addEventListener("keydown", e => {
-        if (modal.style.display === "block" && uidInput.value === "Scan UID Code..." && e.key === "Enter") {
-          e.preventDefault();
-          handleUIDScan();
-        }
-      });
-
-      function toggleFormFields(enable) {
-        const fields = form.querySelectorAll('input:not(#uid), select, textarea, button[type="submit"]');
-        fields.forEach(field => {
-          field.disabled = !enable;
-          field.style.opacity = enable ? '1' : '0.5';
-          field.style.cursor = enable ? 'pointer' : 'not-allowed';
-        });
-      }
-
-      async function loadStudents(highlightUID = null) {
-        const existingTable = document.querySelector(".student-table");
-        if (existingTable) existingTable.remove();
-        studentTable.innerHTML = "<p>Loading students...</p>";
-        try {
-          const res = await fetch("https://bravetosmart.onrender.com/api/students");
-          const data = await res.json();
-          students = data;
-          badge.textContent = `(${students.length})`;
-
-          if (students.length === 0) {
-            studentTable.innerHTML = `
-              <div class="icon">👥</div>
-              <h3>No Students Found</h3>
-              <p>Start by adding your first student to the system</p>
-              <button class="add-btn main">➕ Add Student</button>
-            `;
-            document.querySelector('.add-btn.main').addEventListener("click", () => {
-              modal.style.display = "block";
-              uidInput.value = 'Scan UID Code...';
-              uidInput.readOnly = true;
-              uidInput.title = 'Waiting for scan...';
-              uidInput.style.backgroundColor = '#fff3cd';
-              uidInput.style.border = '1px dashed #d6a100';
-              toggleFormFields(false);
-              showNotification('Press Enter to fetch scanned UID.', 'info');
-            });
-            return;
-          }
-
-          renderPaginatedTable(students, highlightUID);
-        } catch (err) {
-          console.error("Failed to load students:", err);
-          studentTable.innerHTML = "<p style='color: red;'>Error loading students.</p>";
-        }
-      }
-
-      function renderPaginatedTable(data, highlightUID) {
-        const totalPages = Math.ceil(data.length / perPage);
-        const start = (currentPage - 1) * perPage;
-        const pageData = data.slice(start, start + perPage);
-
-        const rows = pageData.map(s => `
-          <tr class="${s.uid === highlightUID ? 'new-entry' : ''}">
-            <td>${s.uid}</td>
-            <td>${s.name}</td>
-            <td>${s.matricNo}</td>
-            <td>${s.email}</td>
-            <td>${s.level}</td>
-            <td>${s.phone}</td>
-            <td>${s.department}</td>
-          </tr>
-        `).join("");
-
-        let pagination = "";
-        if (totalPages > 1) {
-          pagination = `<div class="pagination">`;
-          for (let i = 1; i <= totalPages; i++) {
-            pagination += `<button class="page-btn ${currentPage === i ? "active" : ""}" data-page="${i}">${i}</button>`;
-          }
-          pagination += `</div>`;
-        }
-
-        studentTable.innerHTML = `
-          <table class="student-table">
-            <thead>
-              <tr>
-                <th>UID</th>
-                <th>Name</th>
-                <th>Matric No</th>
-                <th>Email</th>
-                <th>Level</th>
-                <th>Phone</th>
-                <th>Department</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-          ${pagination}
-        `;
-
-        document.querySelectorAll(".page-btn").forEach(btn => {
-          btn.addEventListener("click", e => {
-            currentPage = parseInt(e.target.dataset.page);
-            renderPaginatedTable(students);
-          });
-        });
-
-        if (highlightUID) {
-          setTimeout(() => {
-            const row = document.querySelector("tr.new-entry");
-            if (row) row.classList.remove("new-entry");
-          }, 2000);
-        }
-      }
-
-      form.addEventListener("submit", async e => {
-        e.preventDefault();
-        const uid = uidInput.value.trim();
-        if (!uid || uid === "Scan UID Code..." || uid === "Fetching UID..." || uid === "Error/No UID") {
-          return showNotification("Invalid UID. Please scan again.", "error");
-        }
-
-        const studentData = {
-          uid,
-          name: form.name.value.trim(),
-          matricNo: form.matric.value.trim(),
-          email: form.email.value.trim(),
-          level: form.level.value.trim(),
-          phone: form.phone.value.trim(),
-          department: form.department.value.trim(),
-        };
-
-        const missing = Object.entries(studentData).filter(([k, v]) => k !== "uid" && !v);
-        if (missing.length > 0) {
-          return showNotification("Please fill all fields.", "error");
-        }
-
-        try {
-          const res = await fetch("https://bravetosmart.onrender.com/api/students/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(studentData)
-          });
-
-          const result = await res.json();
-          if (!res.ok) throw new Error(result.message || "Registration failed");
-
-          showNotification("Student registered successfully!", "success");
-          form.reset();
-          modal.style.display = "none";
-          await loadStudents(studentData.uid);
-        } catch (err) {
-          console.error("Registration error:", err);
-          showNotification(err.message, "error");
-        }
-      });
-
-      function showNotification(msg, type = "success") {
-        const existing = document.querySelector(".notification");
-        if (existing) existing.remove();
-
-        const note = document.createElement("div");
-        note.className = `notification ${type}`;
-        note.textContent = msg;
-        document.body.appendChild(note);
-        setTimeout(() => { note.style.opacity = 1; note.style.transform = "translateY(0)"; }, 100);
-        setTimeout(() => {
-          note.style.opacity = 0;
-          note.style.transform = "translateY(-20px)";
-          setTimeout(() => note.remove(), 300);
-        }, 3000);
-      }
-
-      loadStudents(); // initial fetch
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 
 </html>
