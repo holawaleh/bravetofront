@@ -1,3 +1,10 @@
+document.querySelectorAll('.add-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    alert('Open student registration modal...');
+    // In real implementation, trigger a modal or redirect
+  });
+});
+
 const modal = document.getElementById("studentModal");
 const openBtns = document.querySelectorAll(".add-btn");
 const closeBtn = document.getElementById("closeModal");
